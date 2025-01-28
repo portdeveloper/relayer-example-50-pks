@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
-import { createWalletClient, http } from "viem";
+import { createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { monadDevnet } from "~~/scaffold.config";
 
-// Create transport
+// Create transport and clients
 const transport = http(process.env.NEXT_PUBLIC_MONAD_RPC_URL);
+const publicClient = createPublicClient({
+  chain: monadDevnet,
+  transport,
+});
 
 // Initialize private keys
 const PRIVATE_KEYS = [
@@ -31,35 +35,69 @@ type QueuedTx = {
 };
 const txQueue: QueuedTx[] = [];
 const busyKeys = new Set<string>();
+let isCheckingQueue = false;
 
 async function getAvailableKey(): Promise<string | undefined> {
-  return PRIVATE_KEYS.find(key => !busyKeys.has(key));
+  const key = PRIVATE_KEYS.find(key => !busyKeys.has(key));
+  console.log("Available keys:", PRIVATE_KEYS.filter(key => !busyKeys.has(key)).length);
+  return key;
+}
+
+async function processSingleTransaction(privateKey: string, tx: QueuedTx) {
+  const startTime = Date.now();
+  try {
+    // Execute transaction and get the hash
+    const account = privateKeyToAccount(`0x${privateKey}`);
+    const wallet = createWalletClient({
+      account,
+      chain: monadDevnet,
+      transport,
+    });
+
+    const hash = await wallet.writeContract({
+      address: CONTRACT_ADDRESS,
+      abi: CONTRACT_ABI,
+      functionName: "increment",
+      chain: monadDevnet,
+    });
+
+    console.log("Transaction sent:", hash, "waiting for confirmation...");
+
+    // Wait for transaction to be confirmed
+    const receipt = await publicClient.waitForTransactionReceipt({ hash });
+    console.log("Transaction confirmed in block:", receipt.blockNumber);
+  } catch (error) {
+    console.error("Error processing tx:", error);
+  } finally {
+    busyKeys.delete(privateKey);
+    console.log("Freed key:", privateKey.slice(-4), "Time taken:", Date.now() - startTime, "ms");
+  }
 }
 
 async function processQueue() {
-  if (txQueue.length === 0) return;
+  if (isCheckingQueue) return;
+  isCheckingQueue = true;
 
-  const privateKey = await getAvailableKey();
-  if (!privateKey) return; // All keys are busy
-
-  busyKeys.add(privateKey);
-  const tx = txQueue.shift();
-
-  if (tx) {
-    try {
-      await tx.execute(privateKey);
-      // Wait 1 second before marking key as available
-      await new Promise(resolve => setTimeout(resolve, 1000));
-    } catch (error) {
-      console.error("Error processing tx:", error);
-    } finally {
-      busyKeys.delete(privateKey);
-      // Try to process more transactions if any are in queue
-      processQueue();
+  while (txQueue.length > 0) {
+    const privateKey = await getAvailableKey();
+    if (!privateKey) {
+      // If no keys available, wait 100ms and check again
+      await new Promise(resolve => setTimeout(resolve, 100));
+      continue;
     }
-  } else {
-    busyKeys.delete(privateKey);
+
+    console.log("Using key:", privateKey.slice(-4), "Queue length:", txQueue.length);
+    busyKeys.add(privateKey);
+    const tx = txQueue.shift();
+    if (tx) {
+      // Process transaction without waiting for it
+      processSingleTransaction(privateKey, tx);
+    } else {
+      busyKeys.delete(privateKey);
+    }
   }
+
+  isCheckingQueue = false;
 }
 
 export async function POST() {
@@ -70,21 +108,8 @@ export async function POST() {
 
     // Add transaction to queue
     txQueue.push({
-      execute: async (privateKey: string) => {
-        // Create wallet just before sending transaction
-        const account = privateKeyToAccount(`0x${privateKey}`);
-        const wallet = createWalletClient({
-          account,
-          chain: monadDevnet,
-          transport,
-        });
-
-        await wallet.writeContract({
-          address: CONTRACT_ADDRESS,
-          abi: CONTRACT_ABI,
-          functionName: "increment",
-          chain: monadDevnet,
-        });
+      execute: async () => {
+        // Empty execute function since we moved the logic to processSingleTransaction
       },
     });
 
