@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
 import type { NextPage } from "next";
+import { useBlockNumber } from "wagmi";
 import { TransactionVisualizer } from "~~/components/monad/TransactionVisualizer";
 
 const Home: NextPage = () => {
+  const { data: blockNumber } = useBlockNumber({ watch: true });
+
   const handleIncrement = () => {
     fetch("/api/relayer/increment", {
       method: "POST",
@@ -21,9 +23,7 @@ const Home: NextPage = () => {
             </button>
           </div>
 
-          <div className="mt-8 w-full max-w-[1200px] mx-auto">
-            <TransactionVisualizer />
-          </div>
+          <div className="mt-8 w-full max-w-[1200px] mx-auto">{blockNumber && blockNumber.toString()}</div>
         </div>
       </div>
     </>
