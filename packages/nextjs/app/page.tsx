@@ -5,8 +5,7 @@ import type { NextPage } from "next";
 import { TransactionVisualizer } from "~~/components/monad/TransactionVisualizer";
 
 const Home: NextPage = () => {
-  const handleIncrement = async () => {
-    // Fire and forget - don't await the response
+  const handleIncrement = () => {
     fetch("/api/relayer/increment", {
       method: "POST",
     });

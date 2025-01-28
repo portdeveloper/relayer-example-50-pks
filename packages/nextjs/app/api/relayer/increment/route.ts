@@ -1,14 +1,17 @@
 import { NextResponse } from "next/server";
-import { createPublicClient, createWalletClient, http } from "viem";
+import { createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { monadDevnet } from "~~/scaffold.config";
 
-// Create a wallet client for signing transactions
+// Create transport
 const transport = http(process.env.NEXT_PUBLIC_MONAD_RPC_URL);
-const publicClient = createPublicClient({
-  chain: monadDevnet,
-  transport,
-});
+
+// Initialize private keys
+const PRIVATE_KEYS = [
+  process.env.RELAYER_PRIVATE_KEY,
+  process.env.RELAYER_PRIVATE_KEY_2,
+  process.env.RELAYER_PRIVATE_KEY_3,
+].filter((key): key is string => !!key);
 
 // Contract details
 const CONTRACT_ADDRESS = "0x927d45Fb81B1B14dC4E8DE8f62930D5C33a43D22";
@@ -22,28 +25,73 @@ const CONTRACT_ABI = [
   },
 ] as const;
 
+// Queue and wallet tracking
+type QueuedTx = {
+  execute: (privateKey: string) => Promise<void>;
+};
+const txQueue: QueuedTx[] = [];
+const busyKeys = new Set<string>();
+
+async function getAvailableKey(): Promise<string | undefined> {
+  return PRIVATE_KEYS.find(key => !busyKeys.has(key));
+}
+
+async function processQueue() {
+  if (txQueue.length === 0) return;
+
+  const privateKey = await getAvailableKey();
+  if (!privateKey) return; // All keys are busy
+
+  busyKeys.add(privateKey);
+  const tx = txQueue.shift();
+
+  if (tx) {
+    try {
+      await tx.execute(privateKey);
+      // Wait 1 second before marking key as available
+      await new Promise(resolve => setTimeout(resolve, 1000));
+    } catch (error) {
+      console.error("Error processing tx:", error);
+    } finally {
+      busyKeys.delete(privateKey);
+      // Try to process more transactions if any are in queue
+      processQueue();
+    }
+  } else {
+    busyKeys.delete(privateKey);
+  }
+}
+
 export async function POST() {
   try {
-    if (!process.env.RELAYER_PRIVATE_KEY) {
-      return NextResponse.json({ error: "Private key not configured" }, { status: 500 });
+    if (PRIVATE_KEYS.length === 0) {
+      return NextResponse.json({ error: "No private keys configured" }, { status: 500 });
     }
 
-    // Create account from private key
-    const account = privateKeyToAccount(`0x${process.env.RELAYER_PRIVATE_KEY}`);
+    // Add transaction to queue
+    txQueue.push({
+      execute: async (privateKey: string) => {
+        // Create wallet just before sending transaction
+        const account = privateKeyToAccount(`0x${privateKey}`);
+        const wallet = createWalletClient({
+          account,
+          chain: monadDevnet,
+          transport,
+        });
 
-    // Create wallet client
-    const walletClient = createWalletClient({
-      account,
-      chain: monadDevnet,
-      transport,
+        await wallet.writeContract({
+          address: CONTRACT_ADDRESS,
+          abi: CONTRACT_ABI,
+          functionName: "increment",
+          chain: monadDevnet,
+        });
+      },
     });
 
-    // Send transaction
-    await walletClient.writeContract({
-      address: CONTRACT_ADDRESS,
-      abi: CONTRACT_ABI,
-      functionName: "increment",
-    });
+    // Try to process queue
+    processQueue();
+
+    return NextResponse.json({ success: true });
   } catch (error) {
     console.error("Error in increment route:", error);
     return NextResponse.json({ error: "Failed to increment" }, { status: 500 });
