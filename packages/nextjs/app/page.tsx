@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import type { NextPage } from "next";
 import { useAccount } from "wagmi";
@@ -8,6 +9,26 @@ import { Address } from "~~/components/scaffold-eth";
 
 const Home: NextPage = () => {
   const { address: connectedAddress } = useAccount();
+  const [isLoading, setIsLoading] = useState(false);
+  const [lastTxHash, setLastTxHash] = useState<string>();
+
+  const handleIncrement = async () => {
+    try {
+      setIsLoading(true);
+      const response = await fetch("/api/relayer/increment", {
+        method: "POST",
+      });
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+      setLastTxHash(data.hash);
+    } catch (error) {
+      console.error("Failed to increment:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <>
@@ -21,6 +42,21 @@ const Home: NextPage = () => {
           <div className="flex justify-center items-center space-x-2 flex-col sm:flex-row">
             <p className="my-2 font-medium">Connected Address:</p>
             <Address address={connectedAddress} />
+          </div>
+
+          <div className="flex flex-col items-center mt-8 gap-2">
+            <button
+              className={`btn btn-primary ${isLoading ? "loading" : ""}`}
+              onClick={handleIncrement}
+              disabled={isLoading}
+            >
+              {isLoading ? "Incrementing..." : "Increment Counter"}
+            </button>
+            {lastTxHash && (
+              <div className="text-sm opacity-70">
+                Last tx: {lastTxHash.slice(0, 6)}...{lastTxHash.slice(-4)}
+              </div>
+            )}
           </div>
 
           <p className="text-center text-lg">
