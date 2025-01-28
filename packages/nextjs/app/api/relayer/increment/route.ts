@@ -39,13 +39,11 @@ export async function POST() {
     });
 
     // Send transaction
-    const hash = await walletClient.writeContract({
+    await walletClient.writeContract({
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: "increment",
     });
-
-    return NextResponse.json({ hash });
   } catch (error) {
     console.error("Error in increment route:", error);
     return NextResponse.json({ error: "Failed to increment" }, { status: 500 });
