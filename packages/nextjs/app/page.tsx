@@ -1,7 +1,7 @@
 "use client";
 
-import type { NextPage } from "next";
 import { useEffect, useState } from "react";
+import type { NextPage } from "next";
 import { useBlockNumber } from "wagmi";
 import { TransactionVisualizer } from "~~/components/monad/TransactionVisualizer";
 
@@ -19,9 +19,7 @@ const Home: NextPage = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       const now = Date.now();
-      setConfettiInstances(prev => 
-        prev.filter(instance => now - instance.createdAt < 3000)
-      );
+      setConfettiInstances(prev => prev.filter(instance => now - instance.createdAt < 3000));
     }, 100);
 
     return () => clearInterval(interval);
@@ -45,13 +43,22 @@ const Home: NextPage = () => {
     }
   };
 
+  const handleIncrementBy5 = async () => {
+    for (let i = 0; i < 5; i++) {
+      await handleIncrement();
+    }
+  };
+
   return (
     <>
       <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <div className="flex flex-col items-center mt-8 gap-2">
+        <div className="px-5 flex flex-col items-center">
+          <div className="flex items-center mt-8 gap-2">
             <button className="btn btn-primary" onClick={handleIncrement}>
               Increment Counter
+            </button>
+            <button className="btn btn-primary" onClick={handleIncrementBy5}>
+              Increment Counter by 5
             </button>
           </div>
 
