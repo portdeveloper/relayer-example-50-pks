@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { formatDistanceToNow } from "date-fns";
+import ReactConfetti from "react-confetti";
 import { Block, Hash, formatEther } from "viem";
 import { useBlockNumber, usePublicClient } from "wagmi";
 
@@ -20,7 +21,27 @@ type TransactionWithVisuals = {
 const VALUE_COLOR = "bg-success";
 const CONTRACT_COLOR = "bg-primary";
 
-export const TransactionVisualizer = () => {
+// Confetti colors using our theme colors and complementary shades
+const CONFETTI_COLORS = [
+  "#34EEB6", // success (green)
+  "#93BBFB", // primary (blue)
+  "#FFCF72", // warning (yellow)
+  "#FF8863", // error (orange)
+  "#DAE8FF", // secondary (light blue)
+  "#4969A6", // accent (dark blue)
+  "#F9FBFF", // neutral (white)
+  "#385183", // info (navy)
+  "#2A3655", // base-200 (dark)
+  "#E879F9", // pink
+  "#22D3EE", // cyan
+  "#A78BFA", // violet
+];
+
+type Props = {
+  confettiIds: number[];
+};
+
+export const TransactionVisualizer = ({ confettiIds }: Props) => {
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const [lastBlockTime, setLastBlockTime] = useState<Date>();
   const [lastBlock, setLastBlock] = useState<Block>();
@@ -87,6 +108,21 @@ export const TransactionVisualizer = () => {
 
   return (
     <div className="flex flex-col gap-2 md:gap-4">
+      {/* Multiple confetti instances */}
+      {confettiIds.map(id => (
+        <ReactConfetti
+          key={id}
+          width={window.innerWidth}
+          height={window.innerHeight}
+          recycle={false}
+          numberOfPieces={200}
+          gravity={0.3}
+          initialVelocityY={20}
+          colors={CONFETTI_COLORS}
+          style={{ position: "fixed", top: 0, left: 0, zIndex: 50 }}
+        />
+      ))}
+
       <div className="bg-base-100 shadow-lg rounded-lg p-2 md:p-4 mt-2 md:mt-4">
         <div className="grid grid-cols-3 gap-1 md:gap-4 text-sm md:text-base">
           <div className="stat py-2 md:py-4">
