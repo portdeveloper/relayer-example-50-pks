@@ -86,34 +86,34 @@ export const TransactionVisualizer = () => {
   const blockTransactions = lastBlock?.transactions.length ?? 0;
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="bg-base-100 shadow-lg rounded-lg p-4 mt-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="stat">
-            <div className="stat-title">Current Block</div>
-            <div className="stat-value font-mono">{blockNumber?.toString() || "Loading..."}</div>
-            <div className="stat-desc">
+    <div className="flex flex-col gap-2 md:gap-4">
+      <div className="bg-base-100 shadow-lg rounded-lg p-2 md:p-4 mt-2 md:mt-4">
+        <div className="grid grid-cols-3 gap-1 md:gap-4 text-sm md:text-base">
+          <div className="stat py-2 md:py-4">
+            <div className="stat-title text-xs md:text-base">Current Block</div>
+            <div className="stat-value text-xl md:text-3xl font-mono">{blockNumber?.toString() || "Loading..."}</div>
+            <div className="stat-desc text-xs truncate">
               {lastBlockTime && `Last block ${formatDistanceToNow(lastBlockTime, { addSuffix: true })}`}
             </div>
           </div>
 
-          <div className="stat">
-            <div className="stat-title">Block Transactions</div>
-            <div className="stat-value">{blockTransactions}</div>
-            <div className="stat-desc">Transactions in current block</div>
+          <div className="stat py-2 md:py-4">
+            <div className="stat-title text-xs md:text-base">Block Transactions</div>
+            <div className="stat-value text-xl md:text-3xl">{blockTransactions}</div>
+            <div className="stat-desc text-xs">Transactions in block</div>
           </div>
 
-          <div className="stat">
-            <div className="stat-title">Chain Speed</div>
-            <div className="stat-value">1s</div>
-            <div className="stat-desc">Block time</div>
+          <div className="stat py-2 md:py-4">
+            <div className="stat-title text-xs md:text-base">Chain Speed</div>
+            <div className="stat-value text-xl md:text-3xl">1s</div>
+            <div className="stat-desc text-xs">Block time</div>
           </div>
         </div>
       </div>
 
       {/* Static Transaction Visualization */}
-      <div className="bg-base-100 shadow-lg rounded-lg p-4">
-        <h3 className="text-lg font-semibold mb-4">Live Transactions</h3>
+      <div className="bg-base-100 shadow-lg rounded-lg p-2 md:p-4">
+        <h3 className="text-base md:text-lg font-semibold mb-2 md:mb-4">Live Transactions</h3>
         <div className="relative h-80 w-full bg-base-200 rounded-lg overflow-hidden">
           {transactions.map(tx => {
             const value = Number(formatEther(tx.value));

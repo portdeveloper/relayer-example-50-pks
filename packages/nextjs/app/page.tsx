@@ -13,8 +13,8 @@ const Home: NextPage = () => {
   return (
     <>
       <div className="flex items-center flex-col flex-grow pt-10">
-        <div className="px-5">
-          <div className="flex flex-col items-center mt-8 gap-2">
+        <div className="px-5 w-full xl:w-3/4">
+          <div className="flex flex-col items-center mb-4 gap-2">
             <button className="btn btn-primary" onClick={handleIncrement}>
               Increment Counter
             </button>
