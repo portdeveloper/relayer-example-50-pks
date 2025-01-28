@@ -5,7 +5,8 @@ import { useBlockNumber } from "wagmi";
 import { TransactionVisualizer } from "~~/components/monad/TransactionVisualizer";
 
 const Home: NextPage = () => {
-  const { data: blockNumber } = useBlockNumber({ watch: true });
+  const { data: blockNumber } = useBlockNumber();
+  // WATCH FALSE!!!
 
   const handleIncrement = () => {
     fetch("/api/relayer/increment", {
@@ -24,6 +25,7 @@ const Home: NextPage = () => {
           </div>
 
           <div className="mt-8 w-full max-w-[1200px] mx-auto">{blockNumber && blockNumber.toString()}</div>
+          <TransactionVisualizer />
         </div>
       </div>
     </>
