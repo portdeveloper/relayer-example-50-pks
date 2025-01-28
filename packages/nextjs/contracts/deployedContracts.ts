@@ -4,6 +4,37 @@
  */
 import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 
-const deployedContracts = {} as const;
+const deployedContracts = {
+  20143: {
+    YourContract: {
+      address: "0x927d45fb81b1b14dc4e8de8f62930d5c33a43d22",
+      abi: [
+        {
+          type: "function",
+          name: "counter",
+          inputs: [],
+          outputs: [
+            {
+              name: "",
+              type: "uint256",
+              internalType: "uint256",
+            },
+          ],
+          stateMutability: "view",
+        },
+        {
+          type: "function",
+          name: "increment",
+          inputs: [],
+          outputs: [],
+          stateMutability: "nonpayable",
+        },
+      ],
+      inheritedFunctions: {},
+      deploymentFile: "run-1738056711.json",
+      deploymentScript: "Deploy.s.sol",
+    },
+  },
+} as const;
 
 export default deployedContracts satisfies GenericContractsDeclaration;
