@@ -24,7 +24,6 @@ export const TransactionVisualizer = () => {
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const [lastBlockTime, setLastBlockTime] = useState<Date>();
   const [lastBlock, setLastBlock] = useState<Block>();
-  const [previousBlockTimestamp, setPreviousBlockTimestamp] = useState<bigint>();
   const [transactions, setTransactions] = useState<TransactionWithVisuals[]>([]);
   const publicClient = usePublicClient();
 
@@ -44,15 +43,6 @@ export const TransactionVisualizer = () => {
       try {
         const block = await publicClient.getBlock({ blockNumber });
         setLastBlockTime(new Date(Number(block.timestamp) * 1000));
-
-        // Get previous block timestamp
-        if (blockNumber > 0n) {
-          const prevBlock = await publicClient.getBlock({
-            blockNumber: blockNumber - 1n,
-          });
-          setPreviousBlockTimestamp(prevBlock.timestamp);
-        }
-
         setLastBlock(block);
 
         // Process new transactions
@@ -95,9 +85,6 @@ export const TransactionVisualizer = () => {
 
   const blockTransactions = lastBlock?.transactions.length ?? 0;
 
-  // Calculate block time from block timestamps
-  const blockTime = lastBlock && previousBlockTimestamp ? Number(lastBlock.timestamp - previousBlockTimestamp) : null;
-
   return (
     <div className="flex flex-col gap-4">
       <div className="bg-base-100 shadow-lg rounded-lg p-4 mt-4">
@@ -118,7 +105,7 @@ export const TransactionVisualizer = () => {
 
           <div className="stat">
             <div className="stat-title">Chain Speed</div>
-            <div className="stat-value">{blockTime !== null ? <span>{blockTime}s</span> : "Calculating..."}</div>
+            <div className="stat-value">1s</div>
             <div className="stat-desc">Block time</div>
           </div>
         </div>
