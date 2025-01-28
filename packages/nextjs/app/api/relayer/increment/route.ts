@@ -45,10 +45,7 @@ export async function POST() {
       functionName: "increment",
     });
 
-    // Wait for transaction
-    const receipt = await publicClient.waitForTransactionReceipt({ hash });
-
-    return NextResponse.json({ hash: receipt.transactionHash });
+    return NextResponse.json({ hash });
   } catch (error) {
     console.error("Error in increment route:", error);
     return NextResponse.json({ error: "Failed to increment" }, { status: 500 });
