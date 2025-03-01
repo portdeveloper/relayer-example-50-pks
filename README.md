@@ -1,130 +1,90 @@
-# 🏗 Scaffold-ETH 2 - Foundry Edition + Monad Devnet configuration
+# Scaffold-ETH 2 + Monad Testnet Config + A Simple Relayer with 50 Private Keys
 
-<h4 align="center">
-  <a href="https://docs.scaffoldeth.io">Documentation</a> |
-  <a href="https://scaffoldeth.io">Website</a>
-</h4>
+A high-performance transaction relayer system built on Scaffold-ETH 2, configured for Monad Testnet.
 
-🧪 An open-source, up-to-date toolkit for building decentralized applications (dapps) on the Ethereum blockchain. It's designed to make it easier for developers to create and deploy smart contracts and build user interfaces that interact with those contracts.
+## 🏗 About
 
-⚙️ Built using NextJS, RainbowKit, Foundry, Wagmi, Viem, and Typescript.
+This project demonstrates how to implement a high-throughput transaction relayer system with multiple private keys for parallel transaction processing. Built on top of Scaffold-ETH 2, it provides a simple yet powerful example of off-chain transaction management with on-chain execution.
 
-- ✅ **Contract Hot Reload**: Your frontend auto-adapts to your smart contract as you edit it.
-- 🪝 **[Custom hooks](https://docs.scaffoldeth.io/hooks/)**: Collection of React hooks wrapper around [wagmi](https://wagmi.sh/) to simplify interactions with smart contracts with typescript autocompletion.
-- 🧱 [**Components**](https://docs.scaffoldeth.io/components/): Collection of common web3 components to quickly build your frontend.
-- 🔥 **Burner Wallet & Local Faucet**: Quickly test your application with a burner wallet and local faucet.
-- 🔐 **Integration with Wallet Providers**: Connect to different wallet providers and interact with the Ethereum network.
+## 🚀 How It Works
 
-![Debug Contracts tab](https://github.com/scaffold-eth/scaffold-eth-2/assets/55535804/b237af0c-5027-4849-a5c1-2e31495cccb1)
+- The relayer uses multiple private keys to send transactions in parallel
+- When you click "Increment", the request is queued on the server, which is a simple nextjs api route
+- Available private keys are assigned to process transactions from the queue
+- Each transaction calls the `increment()` function on the YourContract
+- This architecture allows for high throughput without transaction conflicts
 
-## Requirements
+## 🏄‍♂️ Getting Started
 
-Before you begin, you need to install the following tools:
+Prerequisites: [Node.js](https://nodejs.org/en/) (>=18.18.0), [Yarn](https://yarnpkg.com/getting-started/install) (>=3.2.3), [Git](https://git-scm.com/downloads), [Foundry](https://book.getfoundry.sh/getting-started/installation)
 
-- [Node (>= v18.18)](https://nodejs.org/en/download/)
-- Yarn ([v1](https://classic.yarnpkg.com/en/docs/install/) or [v2+](https://yarnpkg.com/getting-started/install))
-- [Git](https://git-scm.com/downloads)
+```bash
+# Clone the repository
+git clone https://github.com/portdeveloper/relayer-example-50-pks.git
 
-## Quickstart
-
-To get started with Scaffold-ETH 2, follow the steps below:
-
-1. Install dependencies:
-
-```
-cd my-dapp-example
+# Install dependencies
 yarn install
-```
 
-2. Run a local network in the first terminal:
+# Navigate to foundry package
+cd packages/foundry
 
-```
-yarn chain
-```
+# Install foundry dependencies
+forge install
 
-This command starts a local Ethereum network using Foundry. The network runs on your local machine and can be used for testing and development. You can customize the network configuration in `packages/foundry/foundry.toml`.
+# Open a new terminal
 
-3. On a second terminal, deploy the test contract:
-
-```
-yarn deploy
-```
-
-This command deploys a test smart contract to the local network. The contract is located in `packages/foundry/contracts` and can be modified to suit your needs. The `yarn deploy` command uses the deploy script located in `packages/foundry/script` to deploy the contract to the network. You can also customize the deploy script.
-
-4. On a third terminal, start your NextJS app:
-
-```
+# Start the development server
 yarn start
 ```
 
-Visit your app on: `http://localhost:3000`. You can interact with your smart contract using the `Debug Contracts` page. You can tweak the app config in `packages/nextjs/scaffold.config.ts`.
+Visit your app at: http://localhost:3000
 
-Run smart contract test with `yarn foundry:test`
+## 📝 Project Structure
 
-- Edit your smart contracts in `packages/foundry/contracts`
-- Edit your frontend homepage at `packages/nextjs/app/page.tsx`. For guidance on [routing](https://nextjs.org/docs/app/building-your-application/routing/defining-routes) and configuring [pages/layouts](https://nextjs.org/docs/app/building-your-application/routing/pages-and-layouts) checkout the Next.js documentation.
-- Edit your deployment scripts in `packages/foundry/script`
+- **packages/nextjs**: Frontend application built with Next.js
+- **packages/foundry**: Smart contracts and deployment scripts
 
-## Deploying to Monad Devnet
+## 🔐 Using the Relayer
 
-### Smart Contracts 
+This project demonstrates a high-throughput transaction relayer system:
 
-First, check out the existing `.env` file and fill in the necessary values:
+- Configure private keys in `.env` file (see `.env.example`)
+- The relayer automatically processes transaction requests from the queue
+- Customize the relayer logic in `packages/nextjs/api/relayer/increment/route.ts`
 
-```
-MONAD_DEVNET_RPC_URL= 
-MONAD_VERIFIER_URL=
+## 🛠️ Customizing Smart Contracts
 
-# Do not change the name of the variable below, put monad chain id here
-FOUNDRY_CHAIN_ID=
-```
+- Edit contracts in `packages/foundry/contracts`
+- Deploy to your local node (anvil) with `yarn deploy`
+- Deploy to Monad Testnet with `yarn deploy --network monad_testnet`
+- Test with `yarn test`
 
-Also, change the `ETH_KEYSTORE_ACCOUNT` to `scaffold-eth-custom` to deploy on Monad Devnet!
+## 🤝 Need Help?
 
-Then, run the following command to deploy your contract to Monad Devnet:
+- Check out the [Scaffold-ETH 2 Documentation](https://docs.scaffoldeth.io) for Scaffold-ETH 2 related questions
+- Join [Monad Developer Discord](https://discord.gg/monaddev) for any questions related to Monad
 
-```
-yarn deploy --network monad_devnet
-```
+## 📦 Tech Stack
 
-To verify your contract, run the following command:
-```
-yarn verify --network monad_devnet
-```
+- **Blockchain Development**: Foundry (Solidity)
+- **Frontend**: Next.js, React, TailwindCSS
+- **Ethereum Interactions**: wagmi, viem
+- **Development Environment**: Scaffold-ETH 2
+- **Network**: Monad Testnet
 
-To run both deploy and verify, run the following command:
+## 🔍 Features
 
-```
-yarn deploy --network monad_devnet && yarn verify --network monad_devnet
-```
+- Simple counter contract with increment functionality
+- Relayer system with 50 private keys for transaction handling
+- Clean and intuitive UI for interacting with the blockchain
+- Real-time block number updates
+- Transaction tracking
 
-### Frontend
+## 📄 License
 
-First, copy the `.env.example` file to `.env.local` and fill in the values.
+This project is licensed under the MIT License.
 
-Then, change the target network in `packages/nextjs/scaffold.config.ts` to `monadDevnet`
+---
 
-```
-targetNetworks: [monadDevnet],
-```
+Built with ❤️ using [Scaffold-ETH 2](https://github.com/scaffold-eth/scaffold-eth-2)
 
-Then, run the following command to deploy your nextjs app to production:
-
-```
-yarn vercel
-```
-
-You should be able to see a URL to your app on Vercel.
-
-## Documentation
-
-Visit our [docs](https://docs.scaffoldeth.io) to learn how to start building with Scaffold-ETH 2.
-
-To know more about its features, check out our [website](https://scaffoldeth.io).
-
-## Contributing to Scaffold-ETH 2
-
-We welcome contributions to Scaffold-ETH 2!
-
-Please see [CONTRIBUTING.MD](https://github.com/scaffold-eth/scaffold-eth-2/blob/main/CONTRIBUTING.md) for more information and guidelines for contributing to Scaffold-ETH 2.
