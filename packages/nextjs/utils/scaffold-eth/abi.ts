@@ -1,0 +1,1 @@
+export const CONTRACT_ABI = [{ "type": "function", "name": "counter", "inputs": [], "outputs": [{ "name": "", "type": "uint256", "internalType": "uint256" }], "stateMutability": "view" }, { "type": "function", "name": "increment", "inputs": [], "outputs": [], "stateMutability": "nonpayable" }] as const;

@@ -1,12 +1,13 @@
 import { NextResponse } from "next/server";
 import { createPublicClient, createWalletClient, http } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { monadDevnet } from "~~/scaffold.config";
+import { monadTestnet } from "~~/scaffold.config";
+import { CONTRACT_ABI } from "~~/utils/scaffold-eth/abi";
 
 // Create transport and clients
 const transport = http(process.env.NEXT_PUBLIC_MONAD_RPC_URL);
 const publicClient = createPublicClient({
-  chain: monadDevnet,
+  chain: monadTestnet,
   transport,
 });
 
@@ -68,16 +69,8 @@ const PRIVATE_KEYS = [
 ].filter((key): key is string => !!key);
 
 // Contract details
-const CONTRACT_ADDRESS = "0x927d45Fb81B1B14dC4E8DE8f62930D5C33a43D22";
-const CONTRACT_ABI = [
-  {
-    inputs: [],
-    name: "increment",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-] as const;
+const CONTRACT_ADDRESS = "0x952f40B7bEB98A45D3f3d4f9918F60d054e247C2";
+
 
 // Queue and wallet tracking
 type QueuedTx = {
@@ -100,7 +93,7 @@ async function processSingleTransaction(privateKey: string, tx: QueuedTx) {
     const account = privateKeyToAccount(`0x${privateKey}`);
     const wallet = createWalletClient({
       account,
-      chain: monadDevnet,
+      chain: monadTestnet,
       transport,
     });
 
@@ -108,7 +101,7 @@ async function processSingleTransaction(privateKey: string, tx: QueuedTx) {
       address: CONTRACT_ADDRESS,
       abi: CONTRACT_ABI,
       functionName: "increment",
-      chain: monadDevnet,
+      chain: monadTestnet,
     });
 
     console.log("Transaction sent:", hash, "waiting for confirmation...");
