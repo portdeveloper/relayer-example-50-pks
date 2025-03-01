@@ -8,7 +8,6 @@ import { RelayerSchema } from "~~/components/RelayerSchema";
 
 const Home: NextPage = () => {
   const { data: blockNumber } = useBlockNumber({ watch: true });
-  const [isLoading, setIsLoading] = useState(false);
   const [txCount, setTxCount] = useState(0);
 
   const { data: counter } = useScaffoldReadContract({
@@ -19,7 +18,6 @@ const Home: NextPage = () => {
 
   const handleIncrement = async () => {
     try {
-      setIsLoading(true);
       await fetch("/api/relayer/increment", {
         method: "POST",
       });
@@ -27,7 +25,6 @@ const Home: NextPage = () => {
     } catch (error) {
       console.error("Error incrementing:", error);
     } finally {
-      setIsLoading(false);
     }
   };
 
@@ -41,7 +38,7 @@ const Home: NextPage = () => {
               <h2 className="card-title">Simple Relayer with 50 private keys</h2>
               
               <div className="stats shadow mt-4">
-                <div className="stat">
+                <div className="stat w-[200px]">
                   <div className="stat-title">Current Block</div>
                   <div className="stat-value text-primary">{blockNumber?.toString() || "Loading..."}</div>
                 </div>
@@ -75,11 +72,10 @@ const Home: NextPage = () => {
               
               <div className="card-actions justify-center mt-6">
                 <button 
-                  className={`btn btn-primary btn-lg ${isLoading ? "loading" : ""}`} 
+                  className={`btn btn-primary btn-lg`} 
                   onClick={handleIncrement}
-                  disabled={isLoading}
                 >
-                  {isLoading ? "Processing..." : "Increment Counter"}
+                  Increment Counter
                 </button>
               </div>
             </div>
