@@ -69,8 +69,7 @@ const PRIVATE_KEYS = [
 ].filter((key): key is string => !!key);
 
 // Contract details
-const CONTRACT_ADDRESS = "0x952f40B7bEB98A45D3f3d4f9918F60d054e247C2";
-
+const CONTRACT_ADDRESS = "0x008177C9F3fb89b367bD4b3E1353D24D372DDE8a";
 
 // Queue and wallet tracking
 type QueuedTx = {
@@ -94,7 +93,7 @@ async function processSingleTransaction(privateKey: string, tx: QueuedTx) {
     const wallet = createWalletClient({
       account,
       chain: monadTestnet,
-      transport,
+      transport: http(`https://monad-testnet.g.alchemy.com/v2/Xi6hOmC85g4gnVx1ws1R9SZJGkujeREs`),
     });
 
     const hash = await wallet.writeContract({
@@ -149,19 +148,35 @@ export async function POST() {
       return NextResponse.json({ error: "No private keys configured" }, { status: 500 });
     }
 
-    // Add transaction to queue
-    txQueue.push({
-      execute: async () => {
-        // Empty execute function since we moved the logic to processSingleTransaction
-      },
-    });
+    // Always send 20 transactions
+    const BATCH_SIZE = 20;
+
+    // Add transactions to queue
+    for (let i = 0; i < BATCH_SIZE; i++) {
+      txQueue.push({
+        execute: async () => {
+          // Empty execute function since we moved the logic to processSingleTransaction
+        },
+      });
+    }
 
     // Try to process queue
     processQueue();
 
-    return NextResponse.json({ success: true });
+    return NextResponse.json({
+      success: true,
+      message: `Queued ${BATCH_SIZE} increment transactions`,
+      queueLength: txQueue.length,
+      availableKeys: PRIVATE_KEYS.filter(key => !busyKeys.has(key)).length,
+    });
   } catch (error) {
     console.error("Error in increment route:", error);
-    return NextResponse.json({ error: "Failed to increment" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Failed to increment",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    );
   }
 }

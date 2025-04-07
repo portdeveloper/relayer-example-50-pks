@@ -9,6 +9,13 @@ import { useScaffoldReadContract } from "~~/hooks/scaffold-eth";
 const Home: NextPage = () => {
   const { data: blockNumber } = useBlockNumber({ watch: true });
   const [txCount, setTxCount] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastResponse, setLastResponse] = useState<{
+    message?: string;
+    queueLength?: number;
+    availableKeys?: number;
+  } | null>(null);
 
   const { data: counter } = useScaffoldReadContract({
     contractName: "YourContract",
@@ -16,14 +23,26 @@ const Home: NextPage = () => {
   });
 
   const handleIncrement = async () => {
+    setIsLoading(true);
+    setError(null);
     try {
-      await fetch("/api/relayer/increment", {
+      const response = await fetch("/api/relayer/increment", {
         method: "POST",
       });
-      setTxCount(prev => prev + 1);
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || data.details || "Failed to increment");
+      }
+      
+      setLastResponse(data);
+      setTxCount(prev => prev + 20); // Always increment by 20
     } catch (error) {
       console.error("Error incrementing:", error);
+      setError(error instanceof Error ? error.message : "Failed to increment");
     } finally {
+      setIsLoading(false);
     }
   };
 
@@ -55,7 +74,7 @@ const Home: NextPage = () => {
                 <ul className="list-disc pl-5 space-y-2">
                   <li>The relayer uses multiple private keys to send transactions in parallel</li>
                   <li>
-                    When you click "Increment", the request is queued on the server, which is a simple nextjs api route
+                    When you click &quot;Increment&quot;, the request is queued on the server, which is a simple nextjs api route
                   </li>
                   <li>Available private keys are assigned to process transactions from the queue</li>
                   <li>
@@ -68,14 +87,40 @@ const Home: NextPage = () => {
                   <div className="stat">
                     <div className="stat-title">Your Transactions</div>
                     <div className="stat-value">{txCount}</div>
-                    <div className="stat-desc">Transactions you've sent this session</div>
+                    <div className="stat-desc">Transactions you&apos;ve sent this session</div>
                   </div>
                 </div>
+
+                {error && (
+                  <div className="alert alert-error">
+                    <div>
+                      <h3 className="font-bold">Error:</h3>
+                      <div className="text-sm">{error}</div>
+                    </div>
+                  </div>
+                )}
+
+                {lastResponse && (
+                  <div className="alert alert-info">
+                    <div>
+                      <h3 className="font-bold">Last Response:</h3>
+                      <div className="text-sm">
+                        <p>{lastResponse.message}</p>
+                        <p>Queue Length: {lastResponse.queueLength}</p>
+                        <p>Available Keys: {lastResponse.availableKeys}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
 
               <div className="card-actions justify-center mt-6">
-                <button className={`btn btn-primary btn-lg`} onClick={handleIncrement}>
-                  Increment Counter
+                <button 
+                  className={`btn btn-primary btn-lg ${isLoading ? 'loading' : ''}`} 
+                  onClick={handleIncrement}
+                  disabled={isLoading}
+                >
+                  {isLoading ? 'Processing...' : 'Send 20 Increments'}
                 </button>
               </div>
             </div>

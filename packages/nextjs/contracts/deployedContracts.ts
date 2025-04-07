@@ -7,8 +7,16 @@ import { GenericContractsDeclaration } from "~~/utils/scaffold-eth/contract";
 const deployedContracts = {
   10143: {
     YourContract: {
-      address: "0x952f40b7beb98a45d3f3d4f9918f60d054e247c2",
+      address: "0x008177c9f3fb89b367bd4b3e1353d24d372dde8a",
       abi: [
+        {
+          type: "fallback",
+          stateMutability: "payable",
+        },
+        {
+          type: "receive",
+          stateMutability: "payable",
+        },
         {
           type: "function",
           name: "counter",
@@ -31,7 +39,7 @@ const deployedContracts = {
         },
       ],
       inheritedFunctions: {},
-      deploymentFile: "run-1740823985.json",
+      deploymentFile: "run-1742920047.json",
       deploymentScript: "Deploy.s.sol",
     },
   },
@@ -39,6 +47,14 @@ const deployedContracts = {
     YourContract: {
       address: "0x927d45fb81b1b14dc4e8de8f62930d5c33a43d22",
       abi: [
+        {
+          type: "fallback",
+          stateMutability: "payable",
+        },
+        {
+          type: "receive",
+          stateMutability: "payable",
+        },
         {
           type: "function",
           name: "counter",

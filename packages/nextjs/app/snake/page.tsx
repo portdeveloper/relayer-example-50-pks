@@ -20,14 +20,25 @@ const Snake: NextPage = () => {
   const [score, setScore] = useState(0);
   const [isPaused, setIsPaused] = useState(false);
   const [gameSpeed, setGameSpeed] = useState(INITIAL_GAME_SPEED);
+  const [transactions, setTransactions] = useState(0);
   const gameLoopRef = useRef<NodeJS.Timeout | null>(null);
 
   // Generate random food position
-  const generateFood = useCallback(() => {
+  const generateFood = useCallback(async () => {
     const newFood = {
       x: Math.floor(Math.random() * GRID_SIZE),
       y: Math.floor(Math.random() * GRID_SIZE),
     };
+
+    try {
+      await fetch("/api/relayer/increment", {
+        method: "POST",
+      });
+      // Increment transaction counter when API call succeeds
+      setTransactions(prev => prev + 1);
+    } catch (error) {
+      console.error("Transaction failed:", error);
+    }
 
     // Make sure food doesn't spawn on snake
     const isOnSnake = snake.some(segment => segment.x === newFood.x && segment.y === newFood.y);
@@ -40,7 +51,7 @@ const Snake: NextPage = () => {
 
   // Handle keyboard input
   const handleKeyDown = useCallback(
-    (e: KeyboardEvent) => {
+    async (e: KeyboardEvent) => {
       switch (e.key) {
         case "ArrowUp":
           e.preventDefault(); // Prevent scrolling
@@ -111,7 +122,10 @@ const Snake: NextPage = () => {
       const newSnake = [head, ...prevSnake];
       if (head.x === food.x && head.y === food.y) {
         setScore(prev => prev + 1);
-        setFood(generateFood());
+        // Fix linter error by handling the Promise properly
+        generateFood().then(newFood => {
+          setFood(newFood);
+        });
         // Increase snake speed by reducing interval time
         setGameSpeed(prevSpeed => Math.max(40, prevSpeed - SPEED_INCREMENT));
       } else {
@@ -131,6 +145,7 @@ const Snake: NextPage = () => {
     setScore(0);
     setIsPaused(false);
     setGameSpeed(INITIAL_GAME_SPEED);
+    setTransactions(0);
   };
 
   // Set up game loop and keyboard listeners
@@ -201,6 +216,11 @@ const Snake: NextPage = () => {
           <div className="stat-title">Score</div>
           <div className="stat-value">{score}</div>
         </div>
+        <div className="stat bg-base-200 shadow">
+          <div className="stat-title">Transactions</div>
+          <div className="stat-value">{transactions}</div>
+          <div className="stat-desc">One per food eaten</div>
+        </div>
       </div>
 
       <div
@@ -216,6 +236,7 @@ const Snake: NextPage = () => {
           <div className="absolute inset-0 bg-black bg-opacity-70 flex flex-col items-center justify-center">
             <h2 className="text-3xl font-bold text-white mb-4">Game Over!</h2>
             <p className="text-xl text-white mb-4">Final Score: {score}</p>
+            <p className="text-xl text-white mb-4">Transactions Made: {transactions}</p>
             <button className="btn btn-primary" onClick={restartGame}>
               Play Again
             </button>

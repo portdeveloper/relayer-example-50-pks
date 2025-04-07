@@ -15,6 +15,12 @@ import "forge-std/console.sol";
 contract YourContract {
     uint256 public counter;
 
+    // Function to receive Ether. msg.data must be empty
+    receive() external payable {}
+
+    // Fallback function is called when msg.data is not empty
+    fallback() external payable {}
+
     function increment() external {
         counter += 1;
     }
